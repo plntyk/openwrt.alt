@@ -34,6 +34,7 @@
 #include "dev-usb.h"
 #include "dev-wmac.h"
 #include "machtypes.h"
+#include "nvram.h"
 
 #define WLR8100_GPIO_LED_USB		4
 #define WLR8100_GPIO_LED_WLAN_5G	12
@@ -53,6 +54,9 @@
 #define WLR8100_MAC1_OFFSET		6
 #define WLR8100_WMAC_CALDATA_OFFSET	0x1000
 #define WLR8100_PCIE_CALDATA_OFFSET	0x5000
+
+#define WLR8100_NVRAM_ADDR		0x1f030000
+#define WLR8100_NVRAM_SIZE		0x10000
 
 static struct gpio_led wlr8100_leds_gpio[] __initdata = {
 	{
@@ -136,9 +140,21 @@ static struct mdio_board_info wlr8100_mdio0_info[] = {
 	},
 };
 
+static void wlr8100_get_mac(const char *name, char *mac)
+{
+	u8 *nvram = (u8 *) KSEG1ADDR(WLR8100_NVRAM_ADDR);
+	int err;
+
+	err = ath79_nvram_parse_mac_addr(nvram, WLR8100_NVRAM_SIZE,
+					 name, mac);
+	if (err)
+		pr_err("no MAC address found for %s\n", name);
+}
+
 static void __init wlr8100_common_setup(void)
 {
 	u8 *art = (u8 *) KSEG1ADDR(0x1fff0000);
+	u8 tmpmac[ETH_ALEN];
 
 	ath79_register_m25p80(NULL);
 
@@ -156,7 +172,10 @@ static void __init wlr8100_common_setup(void)
 
 	ath79_register_mdio(0, 0x0);
 
-	ath79_init_mac(ath79_eth0_data.mac_addr, art + WLR8100_MAC0_OFFSET, 0);
+	/* ath79_init_mac(ath79_eth0_data.mac_addr, art + WLR8100_MAC0_OFFSET, 0); */
+	wlr8100_get_mac("ethaddr=", tmpmac);
+	ath79_init_mac(ath79_eth0_data.mac_addr, tmpmac, 2);
+	ath79_init_mac(ath79_eth1_data.mac_addr, tmpmac, 3);
 
 	mdiobus_register_board_info(wlr8100_mdio0_info,
 				    ARRAY_SIZE(wlr8100_mdio0_info));
