@@ -187,7 +187,7 @@ static void __init wlr8100_common_setup(void)
 
 	ath79_register_eth(0);
 
-	/* GMAC1 is connected tot eh SGMII interface */
+	/* GMAC1 is connected to the SGMII interface */
 	ath79_eth1_data.phy_if_mode = PHY_INTERFACE_MODE_SGMII;
 	ath79_eth1_data.speed = SPEED_1000;
 	ath79_eth1_data.duplex = DUPLEX_FULL;
