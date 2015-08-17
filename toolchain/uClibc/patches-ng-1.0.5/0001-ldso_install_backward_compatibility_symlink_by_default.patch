@@ -1,0 +1,32 @@
+From 9b9abfbd25d5f95010241bdd72941dafecd56b0e Mon Sep 17 00:00:00 2001
+From: Waldemar Brodkorb <wbx@uclibc-ng.org>
+Date: Sat, 15 Aug 2015 00:23:19 +0200
+Subject: ldso: install backward compatibility symlink by default
+
+Simplify the switch from uClibc to uClibc-ng suggested
+by Alexey Brodkin <Alexey.Brodkin@synopsys.com>.
+Gcc always uses .0 ld.so link, so install it by default.
+
+This is a back-port from upstream, see:
+http://cgit.uclibc-ng.org/cgi/cgit/uclibc-ng.git/commit/?id=9b9abfbd25d5f95010241bdd72941dafecd56b0e
+Once 1.0.6 is cut this patch must be removed.
+---
+ ldso/ldso/Makefile.in | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/ldso/ldso/Makefile.in b/ldso/ldso/Makefile.in
+index 424131c..21e0dbc 100644
+--- a/ldso/ldso/Makefile.in
++++ b/ldso/ldso/Makefile.in
+@@ -74,6 +74,8 @@ $(ldso): $(ldso:.$(ABI_VERSION)=)
+ $(ldso:.$(ABI_VERSION)=): | $(top_builddir)lib
+ $(ldso:.$(ABI_VERSION)=): $($(UCLIBC_LDSO_NAME)_OUT)/$(UCLIBC_LDSO_NAME)_so.a
+ 	$(call link.so,$(ldso_FULL_NAME),$(ABI_VERSION))
++	# link for backward compatibility
++	$(call link.so,$(ldso_FULL_NAME),0)
+ 
+ $($(UCLIBC_LDSO_NAME)_OUT)/$(UCLIBC_LDSO_NAME)_so.a: $(ldso-y)
+ 	$(Q)$(RM) $@
+-- 
+cgit v0.11.2-3-g2eb4
+
